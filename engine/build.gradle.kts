@@ -4,8 +4,9 @@ plugins {
 }
 
 kotlin {
+    jvmToolchain(21)
     jvm()
-    js(IR) {
+    js {
         browser()
         binaries.library()          // генерирует npm-пакет в build/js-engine
     }

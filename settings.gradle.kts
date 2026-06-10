@@ -1,8 +1,5 @@
-rootProject.name = "kmp-dataslate"
-
 pluginManagement {
     repositories {
-        google()
         mavenCentral()
         gradlePluginPortal()
     }
@@ -14,10 +11,11 @@ plugins {
 
 dependencyResolutionManagement {
     repositories {
-        google()
         mavenCentral()
     }
 }
+
+rootProject.name = "kmp-dataslate"
 
 include(
     ":engine",
