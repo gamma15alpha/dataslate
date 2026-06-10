@@ -1,4 +1,4 @@
-FROM gradle:9.4.1-jdk21 AS build
+FROM gradle:9.5.0-jdk21 AS build
 WORKDIR /workspace
 
 # Layer: dependency resolution (invalidated only when build files change)

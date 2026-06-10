@@ -1,4 +1,4 @@
-FROM gradle:9.4.1-jdk21 AS engine-build
+FROM gradle:9.5.0-jdk21 AS engine-build
 WORKDIR /workspace
 COPY gradle/ gradle/
 COPY settings.gradle.kts build.gradle.kts ./
