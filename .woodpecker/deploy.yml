@@ -20,7 +20,8 @@ steps:
     image: node:22-alpine
     commands:
       - corepack enable
-      - cd frontend && yarn install --frozen-lockfile && yarn build
+      - yarn --cwd frontend install --frozen-lockfile
+      - yarn --cwd frontend build
 
   # ── 3. Deploy SPA → host nginx web root (volume mount, no SSH needed) ─────────
   - name: deploy-frontend
