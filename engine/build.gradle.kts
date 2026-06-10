@@ -25,8 +25,7 @@ kotlin {
 
 // Sync JS library to root build/js-engine/ so frontend/package.json can resolve it
 tasks.register<Sync>("syncJsEngine") {
-    dependsOn("jsBrowserProductionLibrary")
-    // Default KMP JS IR output path; verify after first build if this fails
+    dependsOn("jsBrowserProductionLibraryDistribution")
     from(layout.buildDirectory.dir("dist/js/productionLibrary"))
     into(rootProject.layout.buildDirectory.dir("js-engine"))
 }
