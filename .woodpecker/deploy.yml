@@ -62,7 +62,7 @@ steps:
         docker run -d \
           --name dataslate-backend \
           --restart unless-stopped \
-          --network dataslate-dev_default \
+          --network dataslate-net \
           -p 127.0.0.1:8080:8080 \
           -e JAVA_TOOL_OPTIONS="-Xms128m -Xmx512m" \
           -e DB_URL=jdbc:postgresql://postgres:5432/dataslate \
