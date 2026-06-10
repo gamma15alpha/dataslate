@@ -32,9 +32,9 @@ steps:
     image: node:22-alpine
     commands:
       - corepack enable
-      - yarn install --frozen-lockfile
-      - yarn type-check
-      - yarn build
+      - cd frontend && yarn install --frozen-lockfile
+      - cd frontend && yarn type-check
+      - cd frontend && yarn build
 
   # ── 4. Bundle size: entry chunk ≤ 250 KB gzip ─────────────────────────────────
   - name: bundle-size
