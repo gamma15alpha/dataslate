@@ -1,0 +1,12 @@
+ktor:
+  deployment:
+    port: 8080
+  application:
+    modules:
+      - space.seydlitz.HttpKt.configureHttp
+      - space.seydlitz.SerializationKt.configureSerialization
+      - space.seydlitz.SecurityKt.configureSecurity
+      - space.seydlitz.StatusPagesKt.configureStatusPages
+      - space.seydlitz.WebsocketsKt.configureWebsockets
+      - space.seydlitz.ResourcesKt.configureResources
+      - space.seydlitz.RoutingKt.configureRouting
