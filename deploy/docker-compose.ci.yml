@@ -1,0 +1,29 @@
+services:
+
+  woodpecker-server:
+    image: woodpeckerci/woodpecker-server:v3
+    restart: unless-stopped
+    environment:
+      WOODPECKER_HOST: https://seydlitz.space:8001
+      WOODPECKER_GITHUB: "true"
+      WOODPECKER_GITHUB_CLIENT: ${WOODPECKER_GITHUB_CLIENT}
+      WOODPECKER_GITHUB_SECRET: ${WOODPECKER_GITHUB_SECRET}
+      WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
+      WOODPECKER_ADMIN: ${WOODPECKER_ADMIN}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ../data/woodpecker:/var/lib/woodpecker
+
+  woodpecker-agent:
+    image: woodpeckerci/woodpecker-agent:v3
+    restart: unless-stopped
+    environment:
+      WOODPECKER_SERVER: woodpecker-server:9000
+      WOODPECKER_AGENT_SECRET: ${WOODPECKER_AGENT_SECRET}
+      WOODPECKER_MAX_WORKFLOWS: 2
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/cache/gradle:/var/cache/gradle
+    depends_on:
+      - woodpecker-server

@@ -1,0 +1,76 @@
+---
+when:
+  - event: push
+    branch: main
+
+steps:
+  # ── 1. Build JS engine artifact ───────────────────────────────────────────────
+  - name: build-js-engine
+    image: gradle:9.4.1-jdk21
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+    volumes:
+      - /var/cache/gradle:/root/.gradle
+    commands:
+      - chmod +x ./gradlew
+      - ./gradlew :engine:syncJsEngine
+
+  # ── 2. Build frontend SPA ─────────────────────────────────────────────────────
+  - name: build-frontend
+    image: node:22-alpine
+    commands:
+      - corepack enable
+      - cd frontend && yarn install --frozen-lockfile && yarn build
+
+  # ── 3. Deploy SPA → host nginx web root (volume mount, no SSH needed) ─────────
+  - name: deploy-frontend
+    image: alpine
+    volumes:
+      - /var/www/html:/var/www/html
+    commands:
+      - rm -rf /var/www/html/*
+      - cp -r frontend/dist/. /var/www/html/
+
+  # ── 4. Build backend Docker image ────────────────────────────────────────────
+  - name: build-backend
+    image: docker:cli
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - docker build -t dataslate-backend:latest -f Dockerfile .
+
+  # ── 5. Restart backend container ─────────────────────────────────────────────
+  - name: deploy-backend
+    image: docker:cli
+    environment:
+      POSTGRES_PASSWORD:
+        from_secret: postgres_password
+      REDIS_PASSWORD:
+        from_secret: redis_password
+      MINIO_ROOT_USER:
+        from_secret: minio_root_user
+      MINIO_ROOT_PASSWORD:
+        from_secret: minio_root_password
+      JWT_SECRET:
+        from_secret: jwt_secret
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - docker rm -f dataslate-backend || true
+      - |
+        docker run -d \
+          --name dataslate-backend \
+          --restart unless-stopped \
+          --network dataslate-dev_default \
+          -p 127.0.0.1:8080:8080 \
+          -e JAVA_TOOL_OPTIONS="-Xms128m -Xmx512m" \
+          -e DB_URL=jdbc:postgresql://postgres:5432/dataslate \
+          -e DB_USER=dataslate \
+          -e DB_PASSWORD="$POSTGRES_PASSWORD" \
+          -e REDIS_URL="redis://:$REDIS_PASSWORD@redis:6379" \
+          -e S3_ENDPOINT=http://minio:9000 \
+          -e S3_ACCESS_KEY="$MINIO_ROOT_USER" \
+          -e S3_SECRET_KEY="$MINIO_ROOT_PASSWORD" \
+          -e S3_BUCKET=dataslate-media \
+          -e JWT_SECRET="$JWT_SECRET" \
+          dataslate-backend:latest

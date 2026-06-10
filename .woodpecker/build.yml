@@ -1,0 +1,56 @@
+---
+when:
+  - event: [push, pull_request]
+
+steps:
+  # ── 1. Gradle: KMP tests (engine jvm+js, core-model, systems, backend) ────────
+  - name: gradle-test
+    image: eclipse-temurin:21-jdk
+    volumes:
+      - /var/cache/gradle:/root/.gradle
+      - /var/run/docker.sock:/var/run/docker.sock   # Testcontainers (backend)
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+      TESTCONTAINERS_RYUK_DISABLED: "true"
+    commands:
+      - chmod +x ./gradlew
+      - ./gradlew :engine:allTests :core-model:allTests :systems:dh1:allTests :backend:test
+
+  # ── 2. Gradle: build JS engine artifact for frontend ──────────────────────────
+  - name: gradle-js-engine
+    image: eclipse-temurin:21-jdk
+    volumes:
+      - /var/cache/gradle:/root/.gradle
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.daemon=false
+    commands:
+      - chmod +x ./gradlew
+      - ./gradlew :engine:syncJsEngine
+
+  # ── 3. Frontend: install → type-check → build ─────────────────────────────────
+  - name: frontend
+    image: node:22-alpine
+    commands:
+      - corepack enable
+      - yarn install --frozen-lockfile
+      - yarn type-check
+      - yarn build
+
+  # ── 4. Bundle size: entry chunk ≤ 250 KB gzip ─────────────────────────────────
+  - name: bundle-size
+    image: node:22-alpine
+    commands:
+      - |
+        LIMIT=256000
+        ENTRY=$(find frontend/dist/assets -name "index-*.js" ! -name "*.map" | head -1)
+        if [ -z "$ENTRY" ]; then
+          echo "ERROR: entry chunk not found in frontend/dist/assets"
+          exit 1
+        fi
+        SIZE=$(gzip -c "$ENTRY" | wc -c)
+        echo "Entry chunk: $(basename $ENTRY) — ${SIZE}B gzip ($(( SIZE / 1024 ))KB / 250KB)"
+        if [ "$SIZE" -gt "$LIMIT" ]; then
+          echo "FAIL: exceeds 250KB gzip limit"
+          exit 1
+        fi
+        echo "OK"

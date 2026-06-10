@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: dataslate
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - ../data/postgres:/var/lib/postgresql/data
 
@@ -26,7 +26,7 @@ services:
       --maxmemory-policy allkeys-lru
       --requirepass ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - ../data/redis:/data
 
@@ -38,16 +38,16 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-dataslate}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     volumes:
       - ../data/minio:/data
 
   minio-init:
     image: minio/mc:latest
+    restart: "no"
     depends_on:
       - minio
-    restart: "no"
     entrypoint: >
       /bin/sh -c "
         sleep 3 &&
@@ -71,19 +71,9 @@ services:
       S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       S3_BUCKET: dataslate-media
       JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "127.0.0.1:8080:8080"
     depends_on:
       - postgres
       - redis
       - minio-init
-    ports:
-      - "8080:8080"
-
-  nginx:
-    build:
-      context: ..
-      dockerfile: Dockerfile.web
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
