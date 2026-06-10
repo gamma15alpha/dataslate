@@ -41,6 +41,6 @@ export const themeOverrides: GlobalThemeOverrides = {
     titleFontSizeSmall:  '11px',
   },
   Descriptions: {
-    labelTextColor:      tokens.text.muted,
+    labelTextColor:      tokens.text.secondary,
   },
 }
