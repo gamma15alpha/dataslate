@@ -17,7 +17,7 @@ steps:
 
   # ── 2. Build frontend SPA ─────────────────────────────────────────────────────
   - name: build-frontend
-    image: node:22-alpine
+    image: node:24-alpine
     commands:
       - corepack enable
       - yarn --cwd frontend install --frozen-lockfile

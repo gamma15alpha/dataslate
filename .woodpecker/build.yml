@@ -29,7 +29,7 @@ steps:
 
   # ── 3. Frontend: install → type-check → build ─────────────────────────────────
   - name: frontend
-    image: node:22-alpine
+    image: node:24-alpine
     commands:
       - corepack enable
       - yarn --cwd frontend install --frozen-lockfile
@@ -38,7 +38,7 @@ steps:
 
   # ── 4. Bundle size: entry chunk ≤ 250 KB gzip ─────────────────────────────────
   - name: bundle-size
-    image: node:22-alpine
+    image: node:24-alpine
     commands:
       - |
         LIMIT=256000

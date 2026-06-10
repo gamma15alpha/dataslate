@@ -10,7 +10,7 @@ COPY engine/src engine/src
 COPY core-model/src core-model/src
 RUN gradle :engine:syncJsEngine --no-daemon
 
-FROM node:22-alpine AS frontend-build
+FROM node:24-alpine AS frontend-build
 WORKDIR /workspace
 COPY --from=engine-build /workspace/build/js-engine build/js-engine
 COPY frontend/package.json frontend/yarn.lock* ./frontend/
